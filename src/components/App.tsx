@@ -28,7 +28,7 @@ function App() {
   // derived / computed state
   const totalNumberOfResults = jobItems?.length || 0
   const totalNumberOfPages = totalNumberOfResults / RESULTS_PER_PAGE
-  const jobItemsSorted = jobItems?.sort((a, b) => {
+  const jobItemsSorted = [...(jobItems || [])]?.sort((a, b) => {
     if (sortBy === 'relevant') {
       return b.relevanceScore - a.relevanceScore
     } else if (sortBy === 'recent') {
@@ -51,7 +51,6 @@ function App() {
       setCurrentPage((prev) => prev - 1)
     }
   }
-
   const handleChangeSortBy = (newSortBy: SortBy) => {
     setCurrentPage(1)
     setSortBy(newSortBy)
