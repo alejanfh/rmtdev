@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { JobItem, JobItemExpanded } from './types'
 import { BASE_API_URL } from './constants'
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import { handleError } from './utils'
 
 type JobItemApiResponse = {
   public: boolean
@@ -34,7 +36,7 @@ export function useJobItem(id: number | null) {
       refetchOnWindowFocus: false,
       retry: false,
       enabled: Boolean(id),
-      onError: () => {},
+      onError: handleError,
     }
   )
   const jobItem = data?.jobItem
@@ -55,6 +57,11 @@ const fetchItems = async (searchText: string): Promise<JobItemsApiResponse> => {
   if (!response.ok) {
     const errorData = await response.json()
     throw new Error(errorData.description)
+
+    // new Error ->
+    // {
+    //   message: 'asometnasia'
+    // }
   }
 
   const data = await response.json()
@@ -71,7 +78,7 @@ export function useJobItems(searchText: string) {
       refetchOnWindowFocus: false,
       retry: false,
       enabled: Boolean(searchText),
-      onError: () => {},
+      onError: handleError,
     }
   )
 
