@@ -1,42 +1,38 @@
-import { ArrowLeftIcon, ArrowRightIcon } from '@radix-ui/react-icons'
-import { PageDirection } from '../lib/types'
+import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
+import { PageDirection } from "../lib/types";
+import { useJobItemsContext } from "../lib/hooks";
 
-type PaginationProps = {
-  onClick: (direction: PageDirection) => void
-  currentPage: number
-  totalNumberOfPages: number
-}
-
-export default function Pagination({
-  onClick,
-  currentPage,
-  totalNumberOfPages,
-}: PaginationProps) {
+export default function Pagination() {
+  const {
+    currentPage,
+    totalNumberOfPages,
+    handleChangePage: onClick,
+  } = useJobItemsContext();
   return (
-    <section className='pagination'>
+    <section className="pagination">
       {currentPage > 1 && (
         <PaginationButton
-          direction='previous'
+          direction="previous"
           currentPage={currentPage}
-          onClick={() => onClick('previous')}
+          onClick={() => onClick("previous")}
         />
       )}
       {currentPage < totalNumberOfPages && (
         <PaginationButton
-          direction='next'
+          direction="next"
           currentPage={currentPage}
-          onClick={() => onClick('next')}
+          onClick={() => onClick("next")}
         />
       )}
     </section>
-  )
+  );
 }
 
 type PaginationButtonProps = {
-  direction: PageDirection
-  currentPage: number
-  onClick: () => void
-}
+  direction: PageDirection;
+  currentPage: number;
+  onClick: () => void;
+};
 
 function PaginationButton({
   direction,
@@ -46,23 +42,23 @@ function PaginationButton({
   return (
     <button
       onClick={(e) => {
-        onClick()
-        e.currentTarget.blur()
+        onClick();
+        e.currentTarget.blur();
       }}
       className={`pagination__button pagination__button--${direction}`}
     >
-      {direction === 'previous' && (
+      {direction === "previous" && (
         <>
           <ArrowLeftIcon />
           Page {currentPage - 1}
         </>
       )}
-      {direction === 'next' && (
+      {direction === "next" && (
         <>
           Page {currentPage + 1}
           <ArrowRightIcon />
         </>
       )}
     </button>
-  )
+  );
 }

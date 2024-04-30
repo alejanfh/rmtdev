@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext } from "react";
+import { ReactNode, createContext } from "react";
 import { useJobItems, useLocalStorage } from "../lib/hooks";
 import { JobItemExpanded } from "../lib/types";
 
@@ -13,7 +13,9 @@ type BookmarksContextProps = {
   isLoading: boolean;
 };
 
-const BookmarksContext = createContext<BookmarksContextProps | null>(null);
+export const BookmarksContext = createContext<BookmarksContextProps | null>(
+  null
+);
 
 export default function BookmarksContextProvider({
   children,
@@ -52,15 +54,4 @@ export default function BookmarksContextProvider({
       {children}
     </BookmarksContext.Provider>
   );
-}
-
-export function useBookmarksContext() {
-  const context = useContext(BookmarksContext);
-  if (!context) {
-    throw new Error(
-      "useBookmarksContext must be used within a BookmarksContextProvider"
-    );
-  }
-
-  return context;
 }

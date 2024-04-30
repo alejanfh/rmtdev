@@ -1,32 +1,27 @@
-type SearchFormProps = {
-  searchText: string
-  setSearchText: (searchText: string) => void
-}
+import { useSearchTextContext } from "../lib/hooks";
 
-export default function SearchForm({
-  searchText,
-  setSearchText,
-}: SearchFormProps) {
+export default function SearchForm() {
+  const { searchText, handleChangeSearchText } = useSearchTextContext();
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault()
+        e.preventDefault();
       }}
-      action='#'
-      className='search'
+      action="#"
+      className="search"
     >
-      <button type='submit'>
-        <i className='fa-solid fa-magnifying-glass'></i>
+      <button type="submit">
+        <i className="fa-solid fa-magnifying-glass"></i>
       </button>
 
       <input
         value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        spellCheck='false'
-        type='text'
+        onChange={(e) => handleChangeSearchText(e.target.value)}
+        spellCheck="false"
+        type="text"
         required
-        placeholder='Find remote developer jobs...'
+        placeholder="Find remote developer jobs..."
       />
     </form>
-  )
+  );
 }
