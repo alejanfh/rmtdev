@@ -1,32 +1,32 @@
-import { useEffect, useState } from 'react'
-import { JobItem, JobItemExpanded } from './types'
-import { BASE_API_URL } from './constants'
-import { useQuery } from '@tanstack/react-query'
-import { handleError } from './utils'
+import { useEffect, useState } from "react";
+import { JobItem, JobItemExpanded } from "./types";
+import { BASE_API_URL } from "./constants";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { handleError } from "./utils";
 
 type JobItemApiResponse = {
-  public: boolean
-  jobItem: JobItemExpanded
-}
+  public: boolean;
+  jobItem: JobItemExpanded;
+};
 
 const fetchJobItem = async (id: number): Promise<JobItemApiResponse> => {
-  const response = await fetch(`${BASE_API_URL}/${id}`)
+  const response = await fetch(`${BASE_API_URL}/${id}`);
 
   // 4xx or 5xx
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.description)
+    const errorData = await response.json();
+    throw new Error(errorData.description);
   }
 
-  const data = await response.json()
+  const data = await response.json();
 
-  return data
-}
+  return data;
+};
 
 export function useJobItem(id: number | null) {
   // ['job-item', id] como el [] de useEffect
   const { data, isInitialLoading } = useQuery(
-    ['job-item', id],
+    ["job-item", id],
     () => (id ? fetchJobItem(id) : null),
     {
       // After how long whe should consider data outdated ?
@@ -37,25 +37,55 @@ export function useJobItem(id: number | null) {
       enabled: Boolean(id),
       onError: handleError,
     }
-  )
-  const jobItem = data?.jobItem
-  const isLoading = isInitialLoading
-  return { jobItem, isLoading } as const
+  );
+  const jobItem = data?.jobItem;
+  const isLoading = isInitialLoading;
+  return { jobItem, isLoading } as const;
 }
+
+// ---------------------------------------------------
+
+export function useJobItems(ids: number[]) {
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["job-item", id],
+      queryFn: () => fetchJobItem(id),
+      staleTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      retry: false,
+      enabled: Boolean(id),
+      onError: handleError,
+    })),
+  });
+
+  const jobItems = results
+    .map((result) => result.data?.jobItem)
+    // .filter((jobItem) => jobItem !== undefined);
+    // .filter((jobItem) => !!jobItem);
+    .filter((jobItem) => Boolean(jobItem)) as JobItemExpanded[];
+  const isLoading = results.some((result) => result.isLoading);
+
+  return {
+    jobItems,
+    isLoading,
+  };
+}
+
+// ---------------------------------------------------
 
 type JobItemsApiResponse = {
-  public: boolean
-  sorted: boolean
-  jobItems: JobItem[]
-}
+  public: boolean;
+  sorted: boolean;
+  jobItems: JobItem[];
+};
 
 const fetchItems = async (searchText: string): Promise<JobItemsApiResponse> => {
-  const response = await fetch(`${BASE_API_URL}?search=${searchText}`)
+  const response = await fetch(`${BASE_API_URL}?search=${searchText}`);
 
   // 4xx or 5xx
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.description)
+    const errorData = await response.json();
+    throw new Error(errorData.description);
 
     // new Error ->
     // {
@@ -63,14 +93,14 @@ const fetchItems = async (searchText: string): Promise<JobItemsApiResponse> => {
     // }
   }
 
-  const data = await response.json()
+  const data = await response.json();
 
-  return data
-}
+  return data;
+};
 
-export function useJobItems(searchText: string) {
+export function useSearchQueryJobItems(searchText: string) {
   const { data, isInitialLoading } = useQuery(
-    ['job-items', searchText],
+    ["job-items", searchText],
     () => fetchItems(searchText),
     {
       staleTime: 1000 * 60 * 60,
@@ -79,13 +109,13 @@ export function useJobItems(searchText: string) {
       enabled: Boolean(searchText),
       onError: handleError,
     }
-  )
+  );
 
   // const jobItems = data?.jobItems
   // const isLoading = isInitialLoading
 
   // return { jobItems, isLoading }
-  return { jobItems: data?.jobItems, isLoading: isInitialLoading } as const
+  return { jobItems: data?.jobItems, isLoading: isInitialLoading } as const;
 }
 
 // export function useJobItems(searchText: string) {
@@ -132,35 +162,35 @@ export function useJobItems(searchText: string) {
 // }
 
 export function useDebounce<T>(value: T, delay = 500): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    const timerId = setTimeout(() => setDebouncedValue(value), delay)
+    const timerId = setTimeout(() => setDebouncedValue(value), delay);
 
-    return () => clearTimeout(timerId)
-  }, [value, delay])
+    return () => clearTimeout(timerId);
+  }, [value, delay]);
 
-  return debouncedValue
+  return debouncedValue;
 }
 
 export function useActiveId() {
-  const [activeId, setActiveId] = useState<number | null>(null)
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   useEffect(() => {
     const handleHashChange = () => {
-      const id = +window.location.hash.slice(1)
-      setActiveId(id)
-    }
-    handleHashChange()
+      const id = +window.location.hash.slice(1);
+      setActiveId(id);
+    };
+    handleHashChange();
 
-    window.addEventListener('hashchange', handleHashChange)
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
-      window.removeEventListener('hashchange', handleHashChange)
-    }
-  }, [])
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
 
-  return activeId
+  return activeId;
 }
 
 export function useLocalStorage<T>(
@@ -169,11 +199,35 @@ export function useLocalStorage<T>(
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState(() =>
     JSON.parse(localStorage.getItem(key) || JSON.stringify(initialValue))
-  )
+  );
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value))
-  }, [value, key])
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [value, key]);
 
-  return [value, setValue] as const
+  return [value, setValue] as const;
+}
+
+export function useOnClickOutside(
+  refs: React.RefObject<HTMLElement>[],
+  handler: () => void
+) {
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        e.target instanceof HTMLElement &&
+        //!buttonRef.current?.contains(e.target) &&
+        //!popoverRef.current?.contains(e.target)
+        refs.every((ref) => !ref.current?.contains(e.target as Node))
+      ) {
+        handler();
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [refs, handler]);
 }
